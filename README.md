@@ -17,3 +17,15 @@ Test Data:
 You can find the test data in the file 'TestData.properties' under (/YourLaga_Test/src/test/resources/TestData/TestData.properties)
 
 PropertyConfigurator.configure(FileUtilities.getFileInputStream("src/ConfigFiles/log4j.properties"));
+
+public static FileInputStream getFileInputStream(String sFilePath){
+		FileInputStream fileInputStream=null;
+		try{
+		File file = new File(sFilePath);
+		fileInputStream = new FileInputStream(file);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return fileInputStream;
+		
+	}
