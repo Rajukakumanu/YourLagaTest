@@ -29,3 +29,9 @@ public static FileInputStream getFileInputStream(String sFilePath){
 		return fileInputStream;
 		
 	}
+
+
+EventFiringWebDriver eventDriver = new EventFiringWebDriver(driver);
+		EventHandler handler = new EventHandler();
+		eventDriver.register(handler);
+		driver = eventDriver;
