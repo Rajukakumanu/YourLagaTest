@@ -16,4 +16,4 @@ As per the Test 3, the failure Screen Shot gets generated under 'maven-cucumber-
 Test Data: 
 You can find the test data in the file 'TestData.properties' under (/YourLaga_Test/src/test/resources/TestData/TestData.properties)
 
-
+PropertyConfigurator.configure(FileUtilities.getFileInputStream("src/ConfigFiles/log4j.properties"));
