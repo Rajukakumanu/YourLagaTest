@@ -1,0 +1,136 @@
+pipeline {
+    agent {
+        label 'test'
+    }
+    parameters {
+        choice(name: 'NAME', choices: ['BVT', 'UI', 'In-Sprint', 'SIT', 'Regression'], description: 'Test run name')
+        string(name: 'PROJECT', defaultValue: 'loans', description: 'Project name')
+        string(name: 'RELEASE', defaultValue: 'eagle', description: 'Release name')
+        choice(name: 'BRAND', choices: ['NWB', 'RBS', 'UBR'], description: 'Bank brand')
+        string(name: 'BROWSER', defaultValue: 'chrome', description: 'Test Environment URL')
+        string(name: 'TEST_CODE_REPOSITORY', defaultValue: 'https://stash.dts.fm.rbsgrp.net/scm/saoa/sao-automation-loans.git', description: 'Bitbucket repository URL')
+        string(name: 'TEST_CODE_BRANCH', defaultValue: 'develop', description: 'Code branch')
+        string(name: 'TEST_SPEC', defaultValue: 'src/specs/**/**/*.ts', description: 'Test Environment URL')
+        string(name: 'TEST_CASES', defaultValue: 'SAOSYS_3002', description: 'Comma separated Test Case ids')
+        string(name: 'JIRA_QUERY', defaultValue: '', description: 'Jira query to retrieve Zephyr Test Case ids, project = "SAOSYS" AND fixVersion = "Wolverine Release" AND cycleName = "C2_R_O"')
+        string(name: 'BROCHUREWARE_URL', defaultValue: 'https://ao-online.nwb-qa-1.mybank.managedtest.com/loans/content/select-account.html', description: 'Brochureware URL')
+        string(name: 'BROCHUREWARE_PRODUCT', defaultValue: 'LOAN', description: 'Brochureware product name')
+        booleanParam(name: 'BPM_RUN', defaultValue: false, description: 'Toggle this to enable BPM run')
+        booleanParam(name: 'MOBILE', defaultValue: false, description: 'Toggle this to enable testing on real mobile device')
+        booleanParam(name: 'PROXY', defaultValue: false, description: 'Toggle this to enable proxy for run')
+        string(name: 'PROXY_BYPASS', defaultValue: '', description: 'Address to be bypassed by proxy ie. *.mybank.managedtest.com')
+        booleanParam(name: 'REPORT', defaultValue: true, description: 'Toggle this to enable report for run, disabled for mobile runs')
+        booleanParam(name: 'SCREENSHOTS', defaultValue: true, description: 'Toggle this to enable screenshots on every page, disabled for mobile runs')
+        choice(name: 'RE_RUN', choices: [0, 1, 2, 3], description: 'Number of attempts to re-run this scenario in case of failure')
+        string(name: 'TIMEOUT', defaultValue: '60000', description: 'Timeout for app init, selectors, assertions and page load')
+    }
+    environment {
+        globalCredentials = credentials('service-account-stash')
+        testCaseIds = ""
+    }
+    stages {
+        stage('Setup') {
+            steps {
+
+                // load sao ci library 
+                library(identifier: 'sao-automation-ci-libs@master', retriever: modernSCM([
+                    $class: 'GitSCMSource', 
+                    credentialsId: 'service-account-stash', 
+                    remote: 'https://stash.dts.fm.rbsgrp.net/scm/saoa/sao-automation-ci-libs.git', 
+                    traits: [[$class: 'jenkins.plugins.git.traits.BranchDiscoveryTrait']]]))
+
+                script {
+                    def displayName = """${params.NAME} [${BUILD_NUMBER}]"""
+                    def description = """${params.TEST_CODE_BRANCH}"""
+                    currentBuild.displayName = displayName.toUpperCase()
+                    currentBuild.description = description
+                }
+            }
+        }
+        // get zephyr test keys from filter
+        stage('Get Test Cases') {
+            when {
+                anyOf {
+                    expression { params.TEST_CASES }
+                    expression { params.JIRA_QUERY }
+                }
+            }
+            steps {
+                script {
+                    if (params.TEST_CASES) {
+                        testCaseIds = params.TEST_CASES
+                    } else if (params.JIRA_QUERY) {
+                        testCaseIds = getTestKeys(globalCredentials, params.JIRA_QUERY)
+                    }
+                    def tcCount = testCaseIds.tokenize(',').size()
+                    if (tcCount > 0) {
+                        echo("""\n${tcCount} Tests Cases to execute:\n\n${testCaseIds}\n""")
+                    } else {
+                        error(message: "Test case list for execution is empty.")
+                    }
+                }
+            }
+        }
+        stage('Kick-off Runs') {
+            when {
+                expression { testCaseIds != null }
+            }
+            steps {
+                script {
+                    def steps = [:]
+                    def testCases = testCaseIds.tokenize(',')
+                    for (tc in testCases) {
+                        def testCase = tc.trim()
+                        steps["Run testCase ${testCase}"] = {
+                            def build = build(job: 'Loans_Runs', propagate: false, parameters: [
+                                string(name: 'NAME', value: params.NAME),
+                                string(name: 'PROJECT', value: params.PROJECT),
+                                string(name: 'RELEASE', value: params.RELEASE),
+                                string(name: 'BRAND', value: params.BRAND),
+                                string(name: 'BROWSER', value: params.BROWSER),
+                                string(name: 'TEST_CODE_REPOSITORY', value: params.TEST_CODE_REPOSITORY),
+                                string(name: 'TEST_CODE_BRANCH', value: params.TEST_CODE_BRANCH),
+                                string(name: 'TEST_SPEC', value: params.TEST_SPEC),
+                                string(name: 'TEST_CASE', value: testCase),
+                                string(name: 'BROCHUREWARE_URL', value: params.BROCHUREWARE_URL),
+                                string(name: 'BROCHUREWARE_PRODUCT', value: params.BROCHUREWARE_PRODUCT),
+                                booleanParam(name: 'BPM_RUN', value: params.BPM_RUN),
+                                booleanParam(name: 'MOBILE', value: params.MOBILE),
+                                booleanParam(name: 'PROXY', value: params.PROXY),
+                                string(name: 'PROXY_BYPASS', value: params.PROXY_BYPASS),
+                                booleanParam(name: 'REPORT', value: params.REPORT),
+                                booleanParam(name: 'SCREENSHOTS', value: params.SCREENSHOTS),
+                                string(name: 'RE_RUN', value: params.RE_RUN),
+                                string(name: 'TIMEOUT', value: params.TIMEOUT),
+                                string(name: 'PARENT_BUILD_NUMBER', value: BUILD_NUMBER)
+                            ])
+                        }
+                    }
+                    parallel steps
+                }
+            }
+        }
+        stage('Notifications') {
+            steps {
+                build(job: 'Email_Notification', propagate: false, parameters: [
+                    string(name: 'PROJECT', value: params.PROJECT.toUpperCase()),
+                    string(name: 'RELEASE', value: params.RELEASE.toUpperCase()),
+                    string(name: 'NAME', value: params.NAME.toUpperCase()),
+                    string(name: 'BUILD_ID', value: BUILD_NUMBER),
+                    string(name: 'BUILD_URL', value: currentBuild.absoluteUrl),
+                    string(name: 'ENVIRONMENT', value: params.BROCHUREWARE_URL),
+                    string(name: 'DURATION', value: currentBuild.durationString)
+                ])
+                build(job: 'Slack_Notification', propagate: false, parameters: [
+                    string(name: 'PROJECT', value: params.PROJECT.toUpperCase()),
+                    string(name: 'RELEASE', value: params.RELEASE.toUpperCase()),
+                    string(name: 'NAME', value: params.NAME.toUpperCase()),
+                    string(name: 'BUILD_ID', value: BUILD_NUMBER),
+                    string(name: 'BUILD_URL', value: currentBuild.absoluteUrl),
+                    string(name: 'ENVIRONMENT', value: params.BROCHUREWARE_URL),
+                    string(name: 'DURATION', value: currentBuild.durationString)
+                ])
+            }
+        }
+    }
+}
