@@ -1,0 +1,101 @@
+import groovy.json.JsonOutput
+
+pipeline {
+    agent {
+        label 'test'
+    }
+    parameters {
+        choice(name: 'NAME', choices: ['UI', 'BVT', 'In-Sprint', 'SIT', 'Regression'], description: 'Test run name')
+        string(name: 'PROJECT', defaultValue: 'loans', description: 'Project name')
+        string(name: 'RELEASE', defaultValue: 'falcon', description: 'Release name')
+        choice(name: 'BRAND', choices: ['NWB', 'RBS', 'UBR'], description: 'Bank brand')
+        choice(name: 'BROWSERSTACK_CONFIG', choices: ['desktop', 'mobile'], description: 'Browserstack test configuration file')
+        string(name: 'TEST_CODE_REPOSITORY', defaultValue: 'https://stash.dts.fm.rbsgrp.net/scm/saoa/sao-automation-loans.git', description: 'Bitbucket repository URL')
+        string(name: 'TEST_CODE_BRANCH', defaultValue: 'develop', description: 'Code branch')
+        string(name: 'TEST_SPEC', defaultValue: 'src/specs/**/**/*.ts', description: 'Test Environment URL')
+        string(name: 'TEST_CASE', defaultValue: 'SAOSYS_3002', description: 'Test Case id')
+        string(name: 'BROCHUREWARE_URL', defaultValue: 'https://sao-online-rbs-lo-insprint.apps.dev-pcf.lb1.rbsgrp.net/loans/content/select-account.html', description: 'Brochureware URL')
+        string(name: 'BROCHUREWARE_PRODUCT', defaultValue: '', description: 'Brochureware product name')
+        booleanParam(name: 'PROXY', defaultValue: false, description: 'Toggle this to enable proxy for run')
+        string(name: 'PROXY_BYPASS', defaultValue: '', description: 'Address to be bypassed by proxy ie. *.mybank.managedtest.com')
+        choice(name: 'RE_RUN', choices: [0, 1, 2, 3], description: 'Number of attempts to re-run this scenario in case of failure')
+        string(name: 'TIMEOUT', defaultValue: '60000', description: 'Timeout for app init, selectors, assertions and page load')
+    }
+    environment {
+        browserstackConfigPath = """data\\${params.PROJECT}\\${params.RELEASE}\\browserstack.${params.BROWSERSTACK_CONFIG}.json"""
+    }    
+    stages {
+        stage('Setup') {
+            steps {
+
+                // load sao ci library 
+                library(identifier: 'sao-automation-ci-libs@master', retriever: modernSCM([
+                    $class: 'GitSCMSource', 
+                    credentialsId: 'service-account-stash', 
+                    remote: 'https://stash.dts.fm.rbsgrp.net/scm/saoa/sao-automation-ci-libs.git', 
+                    traits: [[$class: 'jenkins.plugins.git.traits.BranchDiscoveryTrait']]]))
+                    
+                // set run name and description
+                script {
+                    def displayName = """${params.NAME} [${BUILD_NUMBER}]"""
+                    def description = """${params.TEST_CODE_BRANCH}"""
+                    currentBuild.displayName = displayName.toUpperCase()
+                    currentBuild.description = description
+                }
+
+                // checkout data
+                checkout([
+                    $class                           : 'GitSCM', branches: [[name: 'refs/remotes/origin/master']],
+                    doGenerateSubmoduleConfigurations: false,
+                    extensions                       : [[$class: 'RelativeTargetDirectory', relativeTargetDir: 'data']],
+                    submoduleCfg                     : [],
+                    userRemoteConfigs                : [[credentialsId: 'service-account-stash', url: 'https://stash.dts.fm.rbsgrp.net/scm/saoa/sao-automation-data.git']]])
+
+                // read and print browserstack configuration
+                script {                   
+                    browserstack = readJSON(file: browserstackConfigPath)
+                    mobile = false
+                    if (params.BROWSERSTACK_CONFIG == 'mobile') {
+                        mobile = true
+                    }
+                    println("""BROWSERSTACK CONFIGURATION\n${JsonOutput.prettyPrint(JsonOutput.toJson(browserstack))}""")
+                }
+            }
+        }
+        stage('Parallel Runs') {
+            steps {
+                script {
+                    def steps = [:]
+                    for (c in browserstack.configuration) {
+                        def configuration = c
+                        steps["Run ${configuration}"] = {
+                            def build = build(job: 'Loans_BrowserStack_Runs', propagate: false, parameters: [
+                                string(name: 'NAME', value: params.NAME),
+                                string(name: 'PROJECT', value: params.PROJECT),
+                                string(name: 'RELEASE', value: params.RELEASE),
+                                string(name: 'BROWSER', value: configuration),
+                                string(name: 'BRAND', value: params.BRAND),
+                                string(name: 'TEST_CODE_REPOSITORY', value: params.TEST_CODE_REPOSITORY),
+                                string(name: 'TEST_CODE_BRANCH', value: params.TEST_CODE_BRANCH),
+                                string(name: 'TEST_SPEC', value: params.TEST_SPEC),
+                                string(name: 'TEST_CASE', value: params.TEST_CASE),
+                                string(name: 'BROCHUREWARE_URL', value: params.BROCHUREWARE_URL),
+                                string(name: 'BROCHUREWARE_PRODUCT', value: params.BROCHUREWARE_PRODUCT),
+                                booleanParam(name: 'BPM_RUN', value: false),
+                                booleanParam(name: 'MOBILE', value: mobile),
+                                booleanParam(name: 'PROXY', value: params.PROXY),
+                                string(name: 'PROXY_BYPASS', value: params.PROXY_BYPASS),
+                                booleanParam(name: 'REPORT', value: true),
+                                booleanParam(name: 'SCREENSHOTS', value: true),
+                                string(name: 'RE_RUN', value: params.RE_RUN),
+                                string(name: 'TIMEOUT', value: params.TIMEOUT),
+                                string(name: 'PARENT_BUILD_NUMBER', value: BUILD_NUMBER)
+                            ])
+                        }
+                    }
+                    parallel steps
+                }
+            }
+        }
+    }
+}
