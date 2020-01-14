@@ -1,0 +1,63 @@
+nstall tools
+
+Create tools folder on your C: drive on your pc, make it so there is no spaces anywhere on path C:\Tools\devtools is fine, C:\some folder\devtools is not;
+
+Copy devtools folder from \\LONMW83077\Tools\devtools
+
+Webstorm
+
+Install jetbrains-toolbox.exe from your local devtools folder, choose all default options.
+
+In toolbox (should be in system tray) select WebStorm application and install it.
+
+Ask Rafal Skalski about license.
+
+Git
+
+Install Git.exe from your local devtools folder, choose all default options.
+
+Notepad++ (json editing)
+
+Run notepad++.exe from your local devtools folder npp
+
+Environment
+
+variables
+
+In start menu search window type system environment  variables and click first link found.
+
+Click Environment Variables button, then
+
+In "System variables" find "Path" double click that and add following to "Variable value" including ";" in front.
+;C:\Tools\devtools\node
+In "System variables" click "New..." and enter following, replacing user:pass with your RACFID and password
+for variable name HTTP_PROXY for variable value http://user:pass@fm-eu-lon-proxy.fm.rbsgrp.net:8080/
+for variable name HTTPS_PROXY for variable value http://user:pass@fm-eu-lon-proxy.fm.rbsgrp.net:8080/
+hit OK, to confirm and close.
+
+Open new command line and run
+
+node -v
+npm -v
+Output should return versions, if  "is not recognized as an internal or external command," is returned node variable was not added repeat point 1.
+
+Git setup
+
+On command line execute
+
+git config --global http.sslVerify false
+git config --list
+Output should contain display "http.sslverify=false" among other things, if still complains about SSL may need change in all paths listed in output of git config --list --show-origin
+
+C:\Program Files\Git\mingw64\etc\gitconfig
+
+C:\ProgramData\Git\config
+
+H:\.gitconfig
+
+On command line execute
+
+git config --global core.autocrlf false
+git config --list --show-origin
+
+Output should display "core.autocrlf" among other things, make sure all instances of it "=false"
