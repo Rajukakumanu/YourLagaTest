@@ -1,19 +1,274 @@
-Interview Questions:
-1)different types of data parameters in cucumber
-2) differnce between scenARIO AND OUTLINE
-3)what commands u use in data table in cucumber
-4)define cuucmber framework (E2E) structure
-5)Day to day job responsibilities of automation
-6)Sign off story
-7)how do u handle Alerts
-8)How do u handle window/tabs
-9)Compatability testing automation (browsers/devices)
-10)how do you run the automation jobs in jenkins( for mutiple nodes/mechines)
-11)how do you identify locators and best one for selenium
-12) Waits in Selenium
-13)How do u handle frames and command for it
-14)difference b/w Abstract class and interface
-15)Method overriding/overloading
-16)Difference between Verify/assert
-17)How do you handle Dropdowns in selenium, commands
-18) can u override sytatic methods
+1) What is the difference between Declaration and Definition in Java?
+
+Declaration: If you just declare a class or method/function or variable without mentioning anything about what that class or method/function or variable looks like is called as declaration in Java.
+
+Definition: If you define how a class or method/function or variable is implemented then it is called definition in Java.
+When we create an interface or abstract class, we simply declare a method/function but not define it.
+
+2. What is an Object in Java?
+
+An object is an instance of a class.
+
+4) What is a Class in Java?
+
+Class is a collection on Objects and variables and methods
+
+5)What is Constructor in Java?
+
+Constructor is used in the  creation of an object that is instance of class. Constructor name should be same as class name. It looks like a method but its not a method. It wont return any value.
+
+6)What is Local Variable and Instance Variable?
+
+Local Variable is declared inside the method
+
+Instance Variable is declared inside the class outside the Method
+
+7)What are the OOPs concepts?
+
+OOPS Stands for Object Oriented Programming System. It includes Abstraction, Encapsulation, Inheritance, Polymorphism, Interface etc.,
+
+8)What is Inheritance in Java?
+Inheritance is a process where one class inherits the properties of another class.
+
+9)What is Polymorphism?
+
+Polymorphism allows us to perform a task in multiple ways. Let’s break the word Polymorphism and see it, ‘Poly’ means ‘Many’ and ‘Morphos’ means ‘Shapes’.
+There are two types of Polymorphism in Java
+
+1. Compile time polymorphism (Static binding) – Method overloading
+2. Runtime polymorphism (Dynamic binding) – Method overriding
+
+We can perform polymorphism by ‘Method Overloading’ and ‘Method Overriding’
+
+10) What is Method Overriding?
+Declaring a method in child class which is already present in the parent class is called Method Overriding.
+
+In simple words, overriding means to override the functionality of an existing method.
+
+11) What is Method Overloading?
+A class having multiple methods with same name, but different parameters is called Method Overloading
+
+12)What is Abstraction in Java?
+
+Abstraction is the methodology of hiding the implementation of internal details and showing the functionality to the users.
+
+13)What is Abstract Class in Java?
+
+Syntax:
+abstract class <class-name>{}
+We can easily identify whether a class is an abstract class or not. A class which contains abstract keyword in its declaration then it is an Abstract Class.
+
+--Abstract classes may or may not include abstract methods
+--If a class is declared abstract then it cannot be instantiated.
+--If a class has abstract method then we have to declare the class as abstract class
+--When an abstract class is subclassed, the subclass usually provides implementations for all of the abstract methods in its parent class. However, if it does not, then the subclass must also be declared abstract.
+
+14)What is Abstract Method?
+
+An abstract method is a method that is declared without an implementation (without braces, and followed by a semicolon), like this:
+Syntax:
+abstract void myMethod();
+In order to use an abstract method, you need to override that method in sub class.
+
+15)hat is Interface in Java?
+
+An interface can have methods and variables just like the class but the methods declared in interface does not have body and looks like abstract.
+
+16) What is Encapsulation in Java?
+
+Encapsulation is a mechanism of binding code and data together in a single unit.
+
+To access these private variables from other classes, we used public getter and setter methods. So, the data can be accessed by public methods when we can set the variables private and hide their implementation from other classes. This way we call encapsulation as data hiding.
+
+Set the instance variables private so that these private variables cannot be accessed directly by other classes. Set getter and setter methods of the class as public so that we can set and get the values of the fields.
+
+17) Coding Standerds in programme:
+1. Comments for all methods, classes interfaces for easy understanding
+2.Grouping the reuasble code and place it in separate file
+3. Keep the test data in different file (properties, elxels) and call to the code
+4. maintain consistency in coding language used.	
+
+
+18) How to reverse a String in Java?
+StringBuffer a = new StringBuffer("Software Testing Material");
+ // use reverse() method to reverse string
+ System.out.println(a.reverse());
+
+19)Difference betwwen Array and Array list
+Array is fixed lenth data structure
+Arraylist Variable length data structure
+
+20) Collections in Java
+
+The Collection in Java is a framework that provides an architecture to store and manipulate the group of objects.
+Java Collection means a single unit of objects. Java Collection framework provides many interfaces (Set, List, Queue, Deque) and classes (ArrayList, Vector, LinkedList, PriorityQueue, HashSet, LinkedHashSet, TreeSet).
+
+21) differcne in Extend and implements 
+
+Difference: implements means you are using the elements of a Java Interface in your class. extends means that you are creating a subclass of the base class you are extending. You can only extend one class in your child class, but you can implement as many interfaces as you would like.
+
+22)different types of data parameters in cucumber
+
+Scenario Outline Example and Data Tables 
+
+23) differnce between scenARIO AND scenario OUTLINE
+Scenario executed by only once and scenario outline can be executed by multiple times by passing data by examples
+
+24)what commands u use in data table in cucumber
+
+List one row data without header Eg:
+ @When("^User enters Credentials to LogIn$")
+ public void user_enters_testuser__and_Test(DataTable usercredentials) throws Throwable {
+ List<List<String>> data = usercredentials.raw();
+ driver.findElement(By.id("log")).sendKeys(data.get(0).get(0)); 
+     driver.findElement(By.id("pwd")).sendKeys(data.get(0).get(1));
+ 
+
+Maps more than one row as data with header:
+
+@When("^User enters Credentials to LogIn$")
+ public void user_enters_testuser_and_Test(DataTable usercredentials) throws Throwable {
+ 
+ //Write the code to handle Data Table
+ for (Map<String, String> data : usercredentials.asMaps(String.class, String.class)) {
+ driver.findElement(By.id("log")).sendKeys(data.get("Username")); 
+     driver.findElement(By.id("pwd")).sendKeys(data.get("Password"));
+
+25)define cuucmber framework (E2E) structure
+
+Explain Full Cucumber framework Strcture
+
+26)Day to day job responsibilities of automation
+
+Expain Agile ways of doing automation work for each sprint(starting with reviewing ser stories and pushing code and demo of story to PO)
+
+27)Sign off story
+
+Demo of automated scenarios to PO and sign off story
+
+28)how do u handle Popup's in selenium
+
+Syntax:
+driver.switchTo().alert().accept, also we have other types like dismiss, get text and send keys
+
+
+29)How do u handle window/tabs
+
+Syntax:
+String MainWindow=driver.getWindowHandle();		
+        		
+        // To handle all new opened window.				
+            Set<String> s1=driver.getWindowHandles();	
+
+30)Compatability testing automation (browsers/devices)
+
+Run the Smoke tests on  differnt browsers to make sure the tests work 
+
+31)how do you run the automation jobs in jenkins( for mutiple nodes/mechines)
+
+32)how do you identify locators and best one for selenium
+
+Using differnt types like Xpath, ID, name,link,etc. Best is Id's
+
+33) Waits in Selenium
+
+Implicit wait:
+ we would like it to wait for a certain amount of time before throwing an Nosuch element exception
+Syntax: 
+driver.manage().timeouts().implicitlyWait(10, TimeUnit.SECONDS);
+
+ExplicitWait:
+The explicit wait is used to tell the Web Driver to wait for certain conditions (Expected Conditions) 
+Syntax:
+wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath)
+other types of expected conditions:
+element to be Selected,elementToBeClickble,alertIsPresent
+
+PageLoad:
+
+syntax:
+ driver.manage().timeouts().pageLoadTimeout(100, SECONDS);
+
+fluentWait:
+The fluent wait is used to tell the web driver to wait for a condition, as well as the frequency with which we want to check the condition before throwing an "ElementNotVisibleException" exception.
+Syntax:
+
+Wait wait = new FluentWait(WebDriver reference)
+.withTimeout(timeout, SECONDS)
+.pollingEvery(timeout, SECONDS)
+.ignoring(Exception.class);
+
+
+34)How do u handle frames and command for it
+Basically, we can switch over the elements in frames using 3 ways.
+
+By Index
+By Name or Id
+By Web Element
+
+Swithc to frmae and then perform action
+
+Syntax:
+driver().switchto().frame(0)
+
+35)difference b/w Abstract class and interface
+Abstract Class:
+When an abstract class is subclassed, the subclass usually provides implementations for all of the abstract methods in its parent class
+Abstrct class extends class and implements multiple interfaces
+Abstract class can have abstract and non-abstract methods.
+Abstract class can have final, non-final, static and non-static variables.
+
+Interface:
+Interface has only static and final variables.
+Interface supports multiple inheritance and can extend another Java interface only.
+Interface can have only abstract methods means no body.Also it can have default and static methods also.
+
+
+36)Difference between Verify/assert
+
+Verify:
+In simple words, there wont be any halt in the test execution even though the verify condition is failed
+Verify has been verified using the SoftAssert class.
+softAssert.assertAll(); – Execution will Continue and Execute with other assertions until the last step softAssert.assertAll(); exist.
+Syntax:
+SoftAssert softAssert = new SoftAssert();
+softAssert.assertAll();
+
+Assert:
+In simple words, the scripts to stop if certain assertion fails.
+Syntax:
+assertTrue(driver.getPageSource().contains("stqatools"));
+
+37)How do you handle Dropdowns in selenium, commands
+
+select by Index:
+dropdown.selectByIndex(5);  
+select by value:
+dropdown.selectByValue("Database");  
+
+select by visbiletext:
+dropdown.selectByVisibleText("Database Testing");  
+
+38) can u override sytatic methods
+
+Static methods cannot be overridden because they are not dispatched on the object instance at runtime.
+
+39)limitations of Browser stack
+
+Response time is not as good as a locally installed VM
+Would like it to be easier to see a device fill the screen so it's easier to use
+Sometimes connection is glitchy and I have to reconnect
+
+40)how to reduce automation execution time
+1.parallel execution on multiple mechines and nodes 2. use fast selectors 3.Use only explicit waits 4. Remove tests having duplicate coverage 5. try to idnetify Critical/most common journeys etc..  
+
+41)Why should i hire you
+
+Take accoutbility, Take ownership, work as part of team or individual, required skill set 
+
+42)how to deal with crancy developers
+
+
+
+
+
