@@ -61,3 +61,7 @@ git config --global core.autocrlf false
 git config --list --show-origin
 
 Output should display "core.autocrlf" among other things, make sure all instances of it "=false"
+
+Jenkins Pipeline with Zalinium (selenium Grid) set up
+
+https://automatingguy.com/2017/10/13/selenium-tests-with-jenkins-and-zalenium/
